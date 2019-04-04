@@ -76,40 +76,49 @@ function soma()
 
 	echo "\$reg1 = $reg1, \$reg2 = $reg2, \$regDest = $regDest"
 
-	returnBin 5
-	returnBin 3
-	returnBin 2
-	returnBin 1
+	binToDec $reg1
 }
 
 function binToDec()
 {
 	value=0
 	pos=-1
-	
-	#if [ "$comp" = "1" ]
-	#then
-		
-
+    while [ "$pos" -ge -5 ]
+    do 
+        comp=${1: pos: 1}
+        echo "o numero pra comparar: $comp - $1"
+        if [ "$comp" = "1" ]
+        then
+            if [ "$pos" = "-1" ]
+            then
+                value=1
+            else
+                echo "entrou"
+                ((pos=pos+1))
+                ((value=value+$(returnBin $pos)))
+                ((pos=pos-1))
+            fi
+        fi
+        echo "$pos"
+        ((pos=pos-1))
+    
+    done
+        
+    echo "resp -> $value"    
 }
 
 function returnBin()
 {
-	echo "entered here"
-	e=returnPositive $1
-	echo "$e"
-	#((e=2**$e))
-	echo "$e"
+	e=$(returnPositive $1)
+	echo "((e=2**$e))"
 }
 
 
 function returnPositive()
 {
-	echo "entered here too"
-	#((e=$1**2))
+	((e=$1**2))
 	e=$(echo "sqrt($e)" | bc)
 	echo "$e"
-	return $e
 }
 
 
