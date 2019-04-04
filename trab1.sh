@@ -23,6 +23,18 @@ function leitura()
         echo "faltou o nome do arquivo";
         return;
     fi
+
+    while read -n32 byte
+    do 
+        echo "$byte"
+        init="$(echo $byte | head -c 6)"
+        echo "$init"
+        if (init==0)
+        final="$(echo ${byte: -6})"
+        echo "$final"
+
+    done < "$1"
+
     echo "leitura: $1"
 }
 
