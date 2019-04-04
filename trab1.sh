@@ -27,13 +27,18 @@ function leitura()
     while read -n32 byte
     do 
         echo "$byte"
-        init="$(echo $byte | head -c 6)"
+        init="$( echo $byte | head -c 6 )"
         echo "$init"
-        if (init==0)
-        final="$(echo ${byte: -6})"
-        echo "$final"
-
-    done < "$1"
+        if [  "$init" = "000000" ]
+		then
+        	final="$(echo ${byte: -6})"
+        	echo "$final"
+			if [ "$final" = "100000" ] 
+			then 
+				soma ${byte:6:20}
+			fi
+		fi
+	done < "$1"
 
     echo "leitura: $1"
 }
@@ -62,5 +67,51 @@ function memoria()
     fi
     echo "memória, endereço inicial: $1, quantidade de endereços $2"
 }
+
+function soma()
+{
+	reg1=${1:0:5}
+	reg2=${1:5:5}
+	regDest=${1:10:5}
+
+	echo "\$reg1 = $reg1, \$reg2 = $reg2, \$regDest = $regDest"
+
+	returnBin 5
+	returnBin 3
+	returnBin 2
+	returnBin 1
+}
+
+function binToDec()
+{
+	value=0
+	pos=-1
+	
+	#if [ "$comp" = "1" ]
+	#then
+		
+
+}
+
+function returnBin()
+{
+	echo "entered here"
+	e=returnPositive $1
+	echo "$e"
+	#((e=2**$e))
+	echo "$e"
+}
+
+
+function returnPositive()
+{
+	echo "entered here too"
+	#((e=$1**2))
+	e=$(echo "sqrt($e)" | bc)
+	echo "$e"
+	return $e
+}
+
+
 
 menu $1 $2 $3
