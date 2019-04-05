@@ -80,7 +80,7 @@ function RFormat()
 	case "$inicio" in
 	000)
 		case "$final" in
-		000) ssl
+		000) sll
 		;;
 		010) srl
 		;;
@@ -142,11 +142,11 @@ function RFormat()
 		;;
 		100) and $reg1 $reg2 $regDest
 		;;
-		101) or
+		101) or $reg1 $reg2 $regDest
 		;;
-		110) xor
+		110) xor $reg1 $reg2 $regDest
 		;;
-		111) nor
+		111) nor $reg1 $reg2 $regDest
 		;;
 		esac
 	;;
@@ -178,6 +178,21 @@ function IJFormat()
 function and()
 {
     echo "Operador AND entre os registradores $(binToDec $1) e $(binToDec $2) e salvar no $(binToDec $3)"
+}
+
+function or()
+{
+    echo "Operador OR entre os registradores $(binToDec $1) e $(binToDec $2) e salvar no $(binToDec $3)"
+}
+
+function xor()
+{
+    echo "Operador XOR entre os registradores $(binToDec $1) e $(binToDec $2) e salvar no $(binToDec $3)"
+}
+
+function nor()
+{
+    echo "Operador NOR entre os registradores $(binToDec $1) e $(binToDec $2) e salvar no $(binToDec $3)"
 }
 
 function add()
