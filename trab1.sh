@@ -29,9 +29,8 @@ function leitura()
 		if [ -z "$byte" ]; then
 			continue
 		fi
-        echo "B-> $byte"
+
         init="$( echo $byte | head -c 6 )"
-        echo "A -> $init"
         if [  "$init" = "000000" ]; then
         	RFormat $byte
         else
@@ -73,32 +72,38 @@ function RFormat()
     echo "$1 - $inicio - $final"
 
 
-	reg1=${1:0:5}
-	reg2=${1:5:5}
-	regDest=${1:10:5}
+	reg1=${1:6:5}
+	reg2=${1:11:5}
+	regDest=${1:16:5}
 
 	case "$inicio" in
 	000)
 		case "$final" in
-		000) sll
+		000)
+			shamt="$(echo ${1: -11: 6})"
+			sll $reg1 $shamt $regDest
 		;;
-		010) srl
+		010)
+			shamt="$(echo ${1: -11: 6})"
+			srl $reg1 $shamt $regDest
 		;;
-		011) sra
+		011)
+			shamt="$(echo ${1: -11: 6})"
+			sra $reg1 $shamt $regDest
 		;;
-		100) sllv
+		100) sllv $reg1 $reg2 $regDest
 		;;
-		110) srlv
+		110) srlv $reg1 $reg2 $regDest
 		;;
-		111) srav
+		111) srav $reg1 $reg2 $regDest
 		;;
 		esac
 	;;
 	001)
 		case "$final" in
-		000) jr
+		000) jr $reg1
 		;;
-		001) jalr
+		001) jalr $
 		;;
 		100) syscall
 		;;
@@ -108,25 +113,25 @@ function RFormat()
 	;;
 	010)
 		case "$final" in
-		000) mfhi
+		000) mfhi $regDest
 		;;
-		001) mthi
+		001) mthi $reg1	
 		;;
-		010) mflo
+		010) mflo $regDest
 		;;
-		011) mtlo
+		011) mtlo $reg1
 		;;
 		esac
 	;;
 	011)
 		case "$final" in
-		000) mult
+		000) mult $reg1 $reg2
 		;;
-		001) multu
+		001) multu $reg1 $reg2
 		;; 
-		010) div
+		010) div $reg1 $reg2
 		;;
-		011) divu
+		011) divu $reg1 $reg2
 		;;
 		esac
 	;;
@@ -173,6 +178,86 @@ function RFormat()
 function IJFormat()
 {
 	echo "entrou - $1"
+}
+
+function jr()
+{
+    echo "pula para o valor contido no registrador $(binToDec $1)"
+}
+
+function mult()
+{
+    echo "multiplica os registradores $(binToDec $1) e  $(binToDec $2) e salva em \$lo"
+}
+
+function multu()
+{
+    echo "multiplica os registradores sem sinal ????? $(binToDec $1) e  $(binToDec $2) e salva em \$lo"
+}
+
+function div()
+{
+    echo "divide o registrador $(binToDec $1) pelo  $(binToDec $2) e salva em \$lo"
+}
+
+function divu()
+{
+    echo "divide sem sinal ?????? o registrador $(binToDec $1) pelo  $(binToDec $2) e salva em \$lo"
+}
+
+
+function mflo()
+{
+    echo "move do registrador lo para o registrador $(binToDec $1)"
+}
+
+function mfhi()
+{
+    echo "move do registrador hi para o registrador $(binToDec $1)"
+}
+
+function mtlo()
+{
+    echo "move do registrador $(binToDec $1) para o registrador hi"
+}
+
+function mthi()
+{
+    echo "move do registrador $(binToDec $1) para o registrador hi"
+}
+
+
+function sll()
+{
+    echo "Faz logical shift para a esquerda do registrador $(binToDec $1) em $(binToDec $2) bits e salva no registrador $(binToDec $3)"
+}
+
+function srl()
+{
+    echo "Faz logical shift para a direita do registrador $(binToDec $1) em $(binToDec $2) bits e salva no registrador $(binToDec $3)"
+}
+
+
+function sra()
+{
+    echo "Faz aritimetical shift para a direita do registrador $(binToDec $1) em $(binToDec $2) bits e salva no registrador $(binToDec $3)"
+}
+
+function sllv()
+{
+    echo "Faz logical shift para a esquerda do registrador $(binToDec $1) no valor de bits contidos no registrador (binToDec $2) e salva no registrador $(binToDec $3)"
+}
+
+
+function srlv()
+{
+    echo "Faz logical shift para a direita do registrador $(binToDec $1) no valor de bits contidos no registrador (binToDec $2) e salva no registrador $(binToDec $3)"
+}
+
+
+function srav()
+{
+    echo "Faz aritimetical shift para a direita do registrador $(binToDec $1) no valor de bits contidos no registrador (binToDec $2) e salva no registrador $(binToDec $3)"
 }
 
 function and()
