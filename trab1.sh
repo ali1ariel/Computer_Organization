@@ -12,7 +12,7 @@ function menu()
         ;;
         m) memoria $2 $3
         ;;
-        *) "opção inválida";echo;menu;;
+        *) "opção inválida";echo;exit;;
     esac
 
 }
@@ -26,18 +26,19 @@ function leitura()
 
     while read -n32 byte
     do 
-        echo "$byte"
+		if [ -z "$byte" ]; then
+			continue
+		fi
+        echo "B-> $byte"
         init="$( echo $byte | head -c 6 )"
-        echo "$init"
-        if [  "$init" = "000000" ]
-		then
+        echo "A -> $init"
+        if [  "$init" = "000000" ]; then
         	RFormat $byte
         else
-            IFormat $byte
-		fi
+            IJFormat $byte $init
+	fi
 	done < "$1"
 
-    echo "leitura: $1"
 }
 
 function simulacao()
@@ -67,13 +68,97 @@ function memoria()
 
 function RFormat()
 {
-    final="$(echo ${1: -6})"
-    echo "$final"
+	inicio="$(echo ${1: -6: 3})"
+    final="$(echo ${1: -3})"
+    echo "$1 - $inicio - $final"
 
 
 	reg1=${1:0:5}
 	reg2=${1:5:5}
 	regDest=${1:10:5}
+
+	case "$inicio" in
+	000)
+		case "$final" in
+		000) ssl
+		;;
+		010) srl
+		;;
+		011) sra
+		;;
+		100) sllv
+		;;
+		110) srlv
+		;;
+		111) srav
+		;;
+		esac
+	;;
+	001)
+		case "$final" in
+		000) jr
+		;;
+		001) jalr
+		;;
+		100) syscall
+		;;
+		101) breakfunc
+		;;
+		esac
+	;;
+	010)
+		case "$final" in
+		000) mfhi
+		;;
+		001) mthi
+		;;
+		010) mflo
+		;;
+		011) mtlo
+		;;
+		esac
+	;;
+	011)
+		case "$final" in
+		000) mult
+		;;
+		001) multu
+		;; 
+		010) div
+		;;
+		011) divu
+		;;
+		esac
+	;;
+	100)
+		case "$final" in
+		000) add $reg1 $reg2 $regDest
+		;;
+		001) addu $reg1 $reg2 $regDest
+		;;
+		010) subtract $reg1 $reg2 $regDest
+		;;
+		011) subu $reg1 $reg2 $regDest
+		;;
+		100) and $reg1 $reg2 $regDest
+		;;
+		101) or
+		;;
+		110) xor
+		;;
+		111) nor
+		;;
+		esac
+	;;
+	101)
+		case "$final" in
+		010) setLT $reg1 $reg2 $regDest
+		;;
+		011) setLTUnsigned $reg1 $reg2 $regDest
+		;;
+		esac
+	;;
+	esac
 
     if [ "$final" = "100000" ] 
     then 
@@ -84,25 +169,47 @@ function RFormat()
     fi
 }
 
-function IFormat()
-{
 
+function IJFormat()
+{
+	echo "entrou - $1"
 }
 
-function JFormat()
+function and()
 {
-
+    echo "Operador AND entre os registradores $(binToDec $1) e $(binToDec $2) e salvar no $(binToDec $3)"
 }
 
-function soma()
+function add()
 {
     echo "Somar registrador $(binToDec $1) com o $(binToDec $2) e salvar no $(binToDec $3)"
 }
 
-function sub()
+function addu()
+{
+    echo "Somar registrador $(binToDec $1) com o $(binToDec $2) e salvar no $(binToDec $3)"
+}
+
+function subtract()
 {
     echo "SUBTRAIR registrador $(binToDec $2) do $(binToDec $1) e salvar no $(binToDec $3)"
 }
+
+function subu()
+{
+    echo "SUBTRAIR registrador $(binToDec $2) do $(binToDec $1) e salvar no $(binToDec $3)"
+}
+
+function setLT()
+{
+	echo "Se os registradores $(binToDec $1) e $(binToDec $2) tiverem o mesmo valor, o $(binToDec $3) recebe 1, se não, recebe zero"
+}
+
+function setLTUnsigned()
+{
+	echo "Se os registradores $(binToDec $1) e $(binToDec $2) tiverem o mesmo valor, o $(binToDec $3) recebe 1, se não, recebe zero"
+}
+
 
 function binToDec()
 {
