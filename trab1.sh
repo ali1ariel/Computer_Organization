@@ -31,12 +31,9 @@ function leitura()
         echo "$init"
         if [  "$init" = "000000" ]
 		then
-        	final="$(echo ${byte: -6})"
-        	echo "$final"
-			if [ "$final" = "100000" ] 
-			then 
-				soma ${byte:6:20}
-			fi
+        	RFormat $byte
+        else
+            IFormat $byte
 		fi
 	done < "$1"
 
@@ -68,15 +65,43 @@ function memoria()
     echo "memória, endereço inicial: $1, quantidade de endereços $2"
 }
 
-function soma()
+function RFormat()
 {
+    final="$(echo ${1: -6})"
+    echo "$final"
+
+
 	reg1=${1:0:5}
 	reg2=${1:5:5}
 	regDest=${1:10:5}
 
-	echo "\$reg1 = $reg1, \$reg2 = $reg2, \$regDest = $regDest"
+    if [ "$final" = "100000" ] 
+    then 
+        soma $reg1 $reg2 $regDest
+    elif [ "$final" = "100010" ]
+    then 
+        sub $reg1 $reg2 $regDest
+    fi
+}
 
-	binToDec $reg1
+function IFormat()
+{
+
+}
+
+function JFormat()
+{
+
+}
+
+function soma()
+{
+    echo "Somar registrador $(binToDec $1) com o $(binToDec $2) e salvar no $(binToDec $3)"
+}
+
+function sub()
+{
+    echo "SUBTRAIR registrador $(binToDec $2) do $(binToDec $1) e salvar no $(binToDec $3)"
 }
 
 function binToDec()
@@ -86,25 +111,22 @@ function binToDec()
     while [ "$pos" -ge -5 ]
     do 
         comp=${1: pos: 1}
-        echo "o numero pra comparar: $comp - $1"
         if [ "$comp" = "1" ]
         then
             if [ "$pos" = "-1" ]
             then
                 value=1
             else
-                echo "entrou"
                 ((pos=pos+1))
                 ((value=value+$(returnBin $pos)))
                 ((pos=pos-1))
             fi
         fi
-        echo "$pos"
         ((pos=pos-1))
     
     done
         
-    echo "resp -> $value"    
+    echo "$value"    
 }
 
 function returnBin()
