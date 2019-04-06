@@ -1,5 +1,5 @@
 Computer_Organization
 
-para executar -> 
-  $chmod 777 *.sh
+para executar -> <br>
+  $chmod 777 *.sh<br>
   $bash main.sh l file.bin
