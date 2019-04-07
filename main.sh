@@ -32,13 +32,7 @@ function leitura()
 		if [ -z "$byte" ]; then
 			continue
 		fi
-
-        init="$( echo $byte | head -c 6 )"
-        if [  "$init" = "000000" ]; then
-        	RFormat $byte
-        else
-            IJFormat $byte $init
-	fi
+        RIJFormat $byte
 	done < "$1"
 
 }

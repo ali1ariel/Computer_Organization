@@ -1,4 +1,4 @@
-function IJFormat()
+function RIJFormat()
 {
 	inicio=${1: 0: 3}
     final=${1: 3: 3}
@@ -6,98 +6,98 @@ function IJFormat()
     case "$inicio" in
 	000)
 		case "$final" in
-		000)
+		000) RFormat $1
 		;;
 		001)
 		;;
-		010)
+		010) jump
 		;;
-		011)
+		011) jal
 		;;
-		100)
+		100) beq
 		;;
-		101)
+		101) bne
 		;;
-		110)
-		;;
-		111)
+		110) blez
+		;; 
+		111) bgtz
 		;;
         esac
 	;;
 	001)
 		case "$final" in
 		
-		000)
+		000) addi
 		;;
-		001)
+		001) addiu
 		;;
-		010)
+		010) slti
 		;;
-		011)
+		011) sltiu
 		;;
-		100)
+		100) andi
 		;;
-		101)
+		101) ori
 		;;
-		110)
+		110) xori
 		;;
-		111)
+		111) lui
 		;;
 		esac
 	;;
 	010)
 		case "$final" in
-		000)
+		000) TLB
 		;;
-		001)
+		001) flPt
 		;;
 		esac
 	;;
 	100)
 		case "$final" in
-		000)
+		000) load_byte
 		;;
-		001)
+		001) load_half
 		;;
-		010)
+		010) lwl
 		;;
-		011)
+		011) load_word
 		;;
-		100)
+		100) load_byte_unsigned
 		;;
-		101)
-		;;
-		110)
+		101) lwr
 		;;
 		esac
 	;;
 	101)
 		case "$final" in
-		000)
+		000) store_byte
 		;;
-		001)
+		001) store_half
 		;;
-		010)
+		010) swl
 		;;
-		011)
+		011) store_word
 		;;
-		110)
+		110) swr
 		;;
 		esac
 	;;
     110)
 		case "$final" in
-		000)
+		000) load_linked_word
 		;;
-		001)
+		001) lwc1
 		;;
+		esac
     ;;
     111)
 		case "$final" in
-		000)
+		000) store_cond_word
 		;;
-		001)
+		001) swc1
 		;;
+		esac
     ;;
 	esac
 

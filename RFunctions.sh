@@ -13,15 +13,15 @@ function RFormat()
 	000)
 		case "$final" in
 		000)
-			shamt="$(echo ${1: -11: 6})"
+			shamt=${1: -11: 5}
 			sll $reg1 $shamt $regDest
 		;;
 		010)
-			shamt="$(echo ${1: -11: 6})"
+			shamt=${1: -11: 5}
 			srl $reg1 $shamt $regDest
 		;;
 		011)
-			shamt="$(echo ${1: -11: 6})"
+			shamt=${1: -11: 5}
 			sra $reg1 $shamt $regDest
 		;;
 		100) sllv $reg1 $reg2 $regDest
@@ -98,13 +98,6 @@ function RFormat()
 	;;
 	esac
 
-    if [ "$final" = "100000" ] 
-    then 
-        soma $reg1 $reg2 $regDest
-    elif [ "$final" = "100010" ]
-    then 
-        sub $reg1 $reg2 $regDest
-    fi
 }
 
 
