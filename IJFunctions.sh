@@ -1,3 +1,5 @@
+. RFunctions.sh
+. binToDec.sh
 function RIJFormat()
 {
 	inicio=${1: 0: 3}
@@ -102,6 +104,10 @@ function RIJFormat()
 	esac
 
 }
+function addi()
+{
+	echo "adiciona ao registrador $(binToDec ${1: 11: 5}) o valor do registrador $(binToDec ${1:6:5}) mais $(binToDec ${1:16}) unidades"
+} 
 
 function jump()
 {
@@ -112,3 +118,22 @@ function jal()
 {
 	echo "pula para o endereço ${1:6}, salvando o atual em \$ra"
 }
+
+function beq()
+{
+}
+
+function bne()
+{
+	echo "compara os registradores $(binToDec ${1: 6: 5}) e $(binToDec ${1:11:5}), se não são iguais pula para o endereço $(binToDec ${1:16})"
+}
+
+function blez()
+{
+}
+
+function bgtz()
+{
+}
+
+

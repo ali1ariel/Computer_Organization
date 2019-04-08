@@ -9,8 +9,7 @@ function binToDec()
         comp=${1: pos: 1}
         if [ "$comp" = "1" ]
         then
-            if [ "$pos" = "-1" ]
-            then
+            if [ "$pos" = "-1" ]; then
                 value=1
             else
                 ((pos=pos+1))
@@ -39,4 +38,4 @@ function returnPositive()
 	echo "$e"
 }
 
-
+binToDec $1
