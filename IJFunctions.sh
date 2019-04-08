@@ -1,14 +1,14 @@
+. RFunctions.sh
+. binToDec.sh
 function RIJFormat()
 {
 	inicio=${1: 0: 3}
     final=${1: 3: 3}
 
     case "$inicio" in
-	000)
+	000) #Completo
 		case "$final" in
 		000) RFormat $1
-		;;
-		001)
 		;;
 		010) jump $1
 		;;
@@ -22,7 +22,7 @@ function RIJFormat()
 		;; 
 		111) bgtz $1
 		;;
-        esac
+    esac
 	;;
 	001)
 		case "$final" in
@@ -103,6 +103,47 @@ function RIJFormat()
 
 }
 
+function andi()
+{
+	echo "realiza operação bitwise AND entre o registrador $(binToDec ${1: 6: 5}) e o valor de $(binToDec ${1:16}) unidades, salvando no registrador $(binToDec ${1:11:5})"
+}
+
+function ori()
+{
+ 	echo "realiza operação bitwise OR entre o registrador $(binToDec ${1: 6: 5}) e o valor de $(binToDec ${1:16}) unidades, salvando no registrador $(binToDec ${1:11:5})"
+}
+
+function xori()
+{
+	echo "realiza operação bitwise XOR entre o registrador $(binToDec ${1: 6: 5}) e o valor de $(binToDec ${1:16}) unidades, salvando no registrador $(binToDec ${1:11:5})"
+}
+
+function lui()
+{
+
+}
+
+
+function slti()
+{
+	echo " compara se o registrador $(binToDec ${1: 6: 5}) é menor que o valor de $(binToDec ${1:16}) unidades, se sim, o registrador $(binToDec ${1:11:5}) recebe 1, se não, recebe 0"
+} 
+
+function sltiu()
+{
+	echo " compara se o registrador $(binToDec ${1: 6: 5}) é menor que o valor de $(binToDec ${1:16}) unidades sem sinal, se sim, o registrador $(binToDec ${1:11:5}) recebe 1, se não, recebe 0"
+} 
+
+function addi()
+{
+	echo "adiciona ao registrador $(binToDec ${1: 11: 5}) o valor do registrador $(binToDec ${1:6:5}) mais $(binToDec ${1:16}) unidades"
+} 
+
+function addiu()
+{
+	echo "adiciona ao registrador $(binToDec ${1: 11: 5}) o valor do registrador $(binToDec ${1:6:5}) mais $(binToDec ${1:16}) unidades sem sinal"
+} 
+
 function jump()
 {
 	echo "pula para o endereço ${1:6}"
@@ -112,3 +153,25 @@ function jal()
 {
 	echo "pula para o endereço ${1:6}, salvando o atual em \$ra"
 }
+
+function beq()
+{
+		echo "compara os registradores $(binToDec ${1: 6: 5}) e $(binToDec ${1:11:5}), se são iguais pula $(binToDec ${1:16}) instruções"
+}
+
+function bne()
+{
+	echo "compara os registradores $(binToDec ${1: 6: 5}) e $(binToDec ${1:11:5}), se não são iguais pula $(binToDec ${1:16}) instruções"
+}
+
+function blez()
+{
+		echo "se registrador $(binToDec ${1: 6: 5}) for menor ou igual a zero pula $(binToDec ${1:16}) instruções"
+}
+
+function bgtz()
+{
+			echo "se registrador $(binToDec ${1: 6: 5}) for maior ou igual a zero pula $(binToDec ${1:16}) instruções"
+}
+
+
