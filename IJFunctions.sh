@@ -102,6 +102,10 @@ function RIJFormat()
 	esac
 
 }
+function addi()
+{
+	echo "adiciona ao registrador $(binToDec ${1: 11: 5}) o valor do registrador $(binToDec ${1:6:5}) mais $(binToDec ${1:16}) unidades"
+} 
 
 function andi()
 {
