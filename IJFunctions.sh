@@ -24,7 +24,7 @@ function RIJFormat()
 		;;
     esac
 	;;
-	001)
+	001) #Completo
 		case "$final" in
 		
 		000) addi $1
@@ -41,7 +41,7 @@ function RIJFormat()
 		;;
 		110) xori $1
 		;;
-		111) lui $1
+		111) load_upper_imediate $1
 		;;
 		esac
 	;;
@@ -53,7 +53,7 @@ function RIJFormat()
 		;;
 		esac
 	;;
-	100)
+	100) #VERIFICAR
 		case "$final" in
 		000) load_byte $1
 		;;
@@ -102,6 +102,15 @@ function RIJFormat()
 	esac
 
 }
+
+function load_byte()
+{
+    echo "passa temporariamente os valores relacionados a $(binToDec ${1:16}) para o registrador \$1 que irá ser encaminhado para o registrador $(binToDec ${1:6:5}) atráves da function lui"
+    
+    load_upper_imediate
+}
+
+
 function addi()
 {
 	echo "adiciona ao registrador $(binToDec ${1: 11: 5}) o valor do registrador $(binToDec ${1:6:5}) mais $(binToDec ${1:16}) unidades"
@@ -122,9 +131,9 @@ function xori()
 	echo "realiza operação bitwise XOR entre o registrador $(binToDec ${1: 6: 5}) e o valor de $(binToDec ${1:16}) unidades, salvando no registrador $(binToDec ${1:11:5})"
 }
 
-function lui()
+function load_upper_imediate()
 {
-
+    echo "carrega a constante $(binToDec ${1:16} para os 16 bits mais significantes \do registrador $(binToDec ${1:11:5}"
 }
 
 
