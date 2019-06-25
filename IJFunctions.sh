@@ -133,9 +133,8 @@ function xori()
 
 function load_upper_imediate()
 {
-    echo "carrega a constante $(binToDec ${1:16} para os 16 bits mais significantes \do registrador $(binToDec ${1:11:5}"
+    echo "carrega a constante $(binToDec ${1:16}) para os 16 bits mais significantes \do registrador $(binToDec ${1:11:5})"
 }
-
 
 function slti()
 {
@@ -179,12 +178,12 @@ function bne()
 
 function blez()
 {
-		echo "se registrador $(binToDec ${1: 6: 5}) for menor ou igual a zero pula $(binToDec ${1:16}) instruções"
+		echo "se registrador $(binToDec ${1: 6: 5}) \for menor ou igual a zero pula $(binToDec ${1:16}) instruções"
 }
 
 function bgtz()
 {
-			echo "se registrador $(binToDec ${1: 6: 5}) for maior ou igual a zero pula $(binToDec ${1:16}) instruções"
+		echo "se registrador $(binToDec ${1: 6: 5}) \for maior ou igual a zero pula $(binToDec ${1:16}) instruções"
 }
 
 
