@@ -30,11 +30,13 @@ op000:
 	beq $t0, $t1, funcJal
 	li $t1, 5
 	beq $t0, $t1, funcBne
-funcJ:
+	
+	
+	funcJ:
 
-funcJal:
+	funcJal:
 
-funcBne:
+	funcBne:
 
 op001:
 	lw $t0, pc #carrega em $t0 o endereço de pc
@@ -51,36 +53,41 @@ op001:
 	li $t1, 7
 	beq $t0, $t1, funcLui
 
-funcAddi:
-	lw $t0, pc #carrega em $t0 o endereço de pc ###################################
-	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
-	sll $t0, $t0, 6 # |---6--|**5**|**5**|*********16******|
-	srl $s0, $t0, 27 # |**5**|------------------27----------------| #### REGISTRADOR DE OPERAÇÃO
-	sll $t0, $t0, 5 # |--5--|**5**|*********16******|
-	srl $s1, $t0, 27 # |**5**|----------16-------|  ##### REGISTRADOR DE SALVAMENTO
-	sll $t0, $t0, 5 # |--5--|*********16******|
-	srl $s2, $t0, 16 # |*********16******|   #####NUMERO IMEDIATO
+	funcAddi:
+		lw $t0, pc #carrega em $t0 o endereço de pc ###################################
+		lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
+		sll $t0, $t0, 6 # |---6--|**5**|**5**|*********16******|
+		srl $s0, $t0, 27 # |**5**|------------------27----------------| #### REGISTRADOR DE OPERAÇÃO
+		sll $t0, $t0, 5 # |--5--|**5**|*********16******|
+		srl $s1, $t0, 27 # |**5**|----------16-------|  ##### REGISTRADOR DE SALVAMENTO
+		sll $t0, $t0, 5 # |--5--|*********16******|
+		srl $s2, $t0, 16 # |*********16******|   #####NUMERO IMEDIATO
 	
-	move $a0, $s0 #prepara para função
-	jal carregaRegistrador
-	move $s0, $v0 #pos função
+		move $a0, $s0 #prepara para função
+		jal carregaRegistrador
+		move $s0, $v0 #pos função
+		
+		srl $t0, $s0, 15
+		li $t1, 1
+		
+		bne $t1, $t0, notNegative
+		lui $t1, 0xffff
+		or $s2, $s2, $t1
+		notNegative:
+		addu $t0, $s0, $s2 #OPERAÇÃO REALIZADA
+		
+		move $a0, $t0
+		move $a1, $s1
+		jal salvaNoRegistrador
+		j proxInstrucao
 	
-	lui $t1, 0xffff
-	or $s2, $s2, $t1
-	addu $t0, $s0, $s2 #OPERAÇÃO REALIZADA
-	
-	move $a0, $t0
-	move $a1, $s1
-	jal salvaNoRegistrador
-	j proxInstrucao
 	
 	
-	
-funcAddiu:	
+	funcAddiu:	
 
-funcOri:
+	funcOri:
 
-funcLui:
+	funcLui:
 
 op100:
 	lw $t0, pc #carrega em $t0 o endereço de pc
@@ -88,7 +95,7 @@ op100:
 	sll $t0, $t0, 3
 	srl $t0, $t0, 29
 
-funcLw:
+	funcLw:
 
 op101:
 	lw $t0, pc #carrega em $t0 o endereço de pc
@@ -96,8 +103,7 @@ op101:
 	sll $t0, $t0, 3
 	srl $t0, $t0, 29
  
-funcSw:
-
+	funcSw:#Da pra usar a função salvaNoRegistrador em funcOrg.asm
 
 
 funcRFormat:
@@ -118,11 +124,11 @@ funcRFormat:
 	li $t1, 33
 	beq $t0, $t1, funcAddu
 	
-funcJr:
+	funcJr:
 
-funcMult:
+	funcMult:
 
-funcAdd:
+	funcAdd:
 
-funcAddu:
+	funcAddu:
 
