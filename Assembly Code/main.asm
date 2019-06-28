@@ -14,6 +14,7 @@ pc: .space 4
 text: .space 4
 .align 2
 data: .space 4
+count: .word 1
 cabecalho: .asciiz "data.bin"      # filename for input
 instrucoes: .asciiz "text.bin"      # filename for input
 spacio: .asciiz "\n" #valor em ascii do caracter espaço para auxilio na impressão

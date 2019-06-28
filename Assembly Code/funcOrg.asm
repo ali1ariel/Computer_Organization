@@ -20,6 +20,9 @@ proxInstrucao:
 	lw $t0, pc #######################carrega em $t0 o endereço de pc
 	addi $t1, $t0, 4
 	sw $t1, pc
+	lw $t0, count
+	addi $t0, $t0, 1
+	sw $t0, count
 	j decodifica
 	
 	

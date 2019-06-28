@@ -11,9 +11,9 @@ funcTypeRJ:
 
 	lw $t0, pc #carrega em $t0 o endereço de pc
 	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
-	sll $t0, $t0, 6
-	srl $s0,$t0, 4
+	srl $t0,$t0, 26
 	
+	#########
 	##### seleciona a subparte
 	beq $t0, $0, funcTypeR
 	li $t1, 2
@@ -26,11 +26,79 @@ funcTypeRJ:
 	funcJ: #move o registrador pc para outro local dentro de .text
 	
 	###CONVERSÃO DE ENDEREÇO
+	lw $t0, pc
+	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
+	sll $t0, $t0, 6
+	srl $t0, $t0, 4
 	
-
+	addiu $t0, $t0, -0x400000
+	lw $t1, text
+	add $t0, $t1, $t0
+	addiu $t0, $t0, 4
+	
+	sw $t0, pc
+	j proxInstrucao
 	funcJal: #move o registrador pc, salvando o endereço atual em $ra
+	lw $t0, pc
+	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
+	sll $t0, $t0, 6
+	srl $t0, $t0, 4
+	
+	addiu $t0, $t0, -0x400000
+	lw $t1, text
+	add $t0, $t1, $t0
+	
+	lw $a0, pc
+	sw $t0, -4($sp)
+	li $a1, 31
+	jal salvaNoRegistrador
+	lw $t0, -4($sp)
+	sw $t0, pc
+	
+	#############NÃO MODIFICA PC, POIS JA ESTÁ MODIFICADO	
+	lw $t0, count
+	addi $t0, $t0, 1
+	sw $t0, count
+	j decodifica
 
 	funcBne: #pula para tal instrução se os valores comparados forem diferentes
+	
+	lw $t0, pc #carrega em $t0 o endereço de pc ###################################
+	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
+	sll $t0, $t0, 6 # |---6--|**5**|**5**|*********16******|
+	srl $s0, $t0, 27 # |**5**|------------------27----------------| #### REGISTRADOR DE OPERAÇÃO
+	sll $t0, $t0, 5 # |--5--|**5**|*********16******|
+	srl $s1, $t0, 27 # |**5**|----------16-------|  ##### REGISTRADOR DE SALVAMENTO
+	
+	
+	sw $t0, -4($sp)
+	move $a0, $s0 #prepara para função
+	jal carregaRegistrador
+	move $s0, $v0 #pos função
+	
+	
+	move $a0, $s1 #prepara para função
+	jal carregaRegistrador
+	move $s1, $v0 #pos função
+	lw $t0, -4($sp)
+	
+	slt $t1, $s0, $s1
+	bnez $t1, bneConfirmada
+	
+	j proxInstrucao
+	
+	bneConfirmada:
+	lw $t0, pc
+	addi $t1, $t0, 1
+	sll $t1, $t1, 16
+	srl $t1, $t1, 14
+	addu $t0, $t0, $t1
+	
+	sw $t0, pc
+	
+	j proxInstrucao
+	
+	
 	
 	####
 	
@@ -175,8 +243,8 @@ funcTypeR:
 
 	lw $t0, pc #carrega em $t0 o endereço de pc
 	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
-	sll $t0, $t0, 27
-	srl $t0, $t0, 27
+	sll $t0, $t0, 26
+	srl $s3, $t0, 26
 	
 	lw $t0, pc #carrega em $t0 o endereço de pc ###################################
 	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
@@ -190,15 +258,16 @@ funcTypeR:
 	
 	
 	
+	
 	##### seleciona a função
 	li $t1, 8
-	beq $t0, $0, funcJr
+	beq $s3, $t1, funcJr
 	li $t1, 12
-	beq $t0, $0, funcSyscall
+	beq $s3, $t1, funcSyscall
 	li $t1, 32
-	beq $t0, $t1, funcAdd
+	beq $s3, $t1, funcAdd
 	li $t1, 33
-	beq $t0, $t1, funcAddu
+	beq $s3, $t1, funcAddu
 	
 	funcJr:
 	
@@ -255,9 +324,10 @@ funcTypeR:
 	li $a0, 4
 	jal carregaRegistrador
 	move $t0, $v0 #pos função
+	sw $t0, -4($sp)
 	li $a0, 2 
 	jal carregaRegistrador
-
+	lw $t0, -4($sp)
 	move $a0, $t0
 	
 	syscall
