@@ -48,15 +48,18 @@ funcTypeRJ:
 	
 	addiu $t0, $t0, -0x400000
 	lw $t1, text
-	add $t0, $t1, $t0
+	add $t0, $t1, $t0 #PRONTO O NOVO ENDEREÇO PARA PULAR
 	
-		
 	lw $t1, pc
-	addi $a0, $t1, 4 #############o que acontece aqui
+	addi $a0, $t1, 4 #############ENDEREÇO PARA RETORNAR
+	
 	sw $t0, -4($sp)
+	
 	li $a1, 31
 	jal salvaNoRegistrador
+	
 	lw $t0, -4($sp)
+	
 	sw $t0, pc
 	
 	#############NÃO MODIFICA PC, POIS JA ESTÁ MODIFICADO	
@@ -75,7 +78,7 @@ funcTypeRJ:
 	srl $s1, $t0, 27 # |**5**|----------16-------|  ##### REGISTRADOR DE SALVAMENTO
 	
 	
-	sw $t0, -4($sp)
+	sw $t0, -4($sp)##########AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA#####################
 	move $a0, $s0 #prepara para função
 	jal carregaRegistrador
 	move $s0, $v0 #pos função
@@ -86,17 +89,16 @@ funcTypeRJ:
 	move $s1, $v0 #pos função
 	lw $t0, -4($sp)
 	
-	slt $t1, $s0, $s1
-	bnez $t1, bneConfirmada
+	bne $s0, $s1, bneConfirmada
 	
 	j proxInstrucao
 	
 	bneConfirmada:
-	lw $t0, pc
-	addi $t1, $t0, 1
+	lw $t2, pc##################AQUI!!!!!!!!!!!!!!!!
+	lw $t1, 0($t2)
 	sll $t1, $t1, 16
 	srl $t1, $t1, 14
-	addu $t0, $t0, $t1
+	addu $t0, $t2, $t1
 	
 	sw $t0, pc
 	
@@ -182,9 +184,9 @@ funcTypeI:
 
 
 	funcAddi:
-	srl $t0, $s0, 15
+	srl $t0, $s2, 15 #################################ADDIIUU
 	li $t1, 1
-	beq $t1, $t0, funcAddiu
+	beq $t1, $t0, funcAddiu	
 	add $s3, $s0, $s2 
 	move $t0, $0
 	jr $ra
@@ -298,17 +300,20 @@ funcTypeR:
 	funcAdd:
 
 	sw $ra, -4($sp)
+	
 	move $a0, $s0 #prepara para função
 	jal carregaRegistrador
 	move $s0, $v0 #pos função
-	move $a0, $s2 #prepara para função
+	
+	move $a0, $s1 #prepara para função
 	jal carregaRegistrador
-	move $s2, $v0 #pos função
+	move $s1, $v0 #pos função
+	
 	lw $ra, -4($sp)	
 	
 	
-	add $a0, $s0, $s2
-	move $a1, $s1
+	add $a0, $s0, $s1
+	move $a1, $s2
 	jal salvaNoRegistrador
 	j proxInstrucao
 	
@@ -320,14 +325,14 @@ funcTypeR:
 	move $a0, $s0 #prepara para função
 	jal carregaRegistrador
 	move $s0, $v0 #pos função
-	move $a0, $s2 #prepara para função
+	move $a0, $s1 #prepara para função
 	jal carregaRegistrador
-	move $s2, $v0 #pos função
+	move $s1, $v0 #pos função
 	lw $ra, -4($sp)	
 	
 	
-	addu $a0, $s0, $s2
-	move $a1, $s1
+	addu $a0, $s0, $s1
+	move $a1, $s2
 	jal salvaNoRegistrador
 	j proxInstrucao
 	
@@ -342,7 +347,10 @@ funcTypeR:
 	jal carregaRegistrador
 	lw $t0, -4($sp)
 	move $a0, $t0
-	
+	li $t0, 1
+	bne $v0, $t0, notInteger
+	lw $a0, 0($a0)
+	notInteger:	
 	syscall
 
 	j proxInstrucao
