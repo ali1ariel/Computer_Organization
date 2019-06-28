@@ -38,8 +38,10 @@ funcTypeRJ:
 	
 	sw $t0, pc
 	j proxInstrucao
+	
+	
 	funcJal: #move o registrador pc, salvando o endereço atual em $ra
-	lw $t0, pc
+	lw $t0, pc#########################JAAALLLLLLLLLLL
 	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
 	sll $t0, $t0, 6
 	srl $t0, $t0, 4
@@ -48,7 +50,9 @@ funcTypeRJ:
 	lw $t1, text
 	add $t0, $t1, $t0
 	
-	lw $a0, pc
+		
+	lw $t1, pc
+	addi $a0, $t1, 4 #############o que acontece aqui
 	sw $t0, -4($sp)
 	li $a1, 31
 	jal salvaNoRegistrador
@@ -125,6 +129,7 @@ funcTypeI:
 	li $t1, 43
 	bne $t0, $t1, funcAddiSwitch
 	jal funcSw
+	j postFunc
 	
 	funcAddiSwitch:
 	
@@ -135,28 +140,33 @@ funcTypeI:
 	lw $t0, -4($sp)
 	
 	li $t1, 8
-	bne $s0, $s1, funcAddiuSwitch
+	bne $t0, $t1, funcAddiuSwitch #Compara o endereçamento de função da instrução com o endereço para Addiu
 	jal funcAddi 
+	j postFunc
 	
 	funcAddiuSwitch:
 	li $t1, 9
 	bne $t0, $t1, funcOriSwitch
 	jal funcAddi
+	j postFunc
 	
 	funcOriSwitch:
 	li $t1, 13
 	bne $t0, $t1, funcLuiSwitch
 	jal funcOri
+	j postFunc
 	
 	funcLuiSwitch:
 	li $t1, 15
 	bne $t0, $t1,funcMulSwitch
 	jal funcLui
+	j postFunc
 	
 	funcMulSwitch:
 	li $t1, 28
 	bne $t0, $t1,funcLwSwitch
 	jal funcMul
+	j postFunc
 	
 	funcLwSwitch:
 	li $t1, 35
@@ -199,15 +209,18 @@ funcTypeI:
 	
 	funcMul: #carrega o valor imediato nos 4 primeiros bytes da instrução
 	
-	srl $s2, $s2, 11
+	
+	srl $s2, $s2, 11 # REGISTRADOR DE OPERAÇÃO
 	
 	sw $ra, -4($sp)
+	
 	move $a0, $s2 #prepara para função
 	jal carregaRegistrador
 	move $s2, $v0 #pos função
+	
 	lw $ra, -4($sp)
 	
-	mul $s3, $s0, $s2
+	mul $s3, $s0, $s2 ###############SUPER VERIFICAR ISSO AQUI
 		
 	move $t0, $0
 	jr $ra 
@@ -270,7 +283,7 @@ funcTypeR:
 	beq $s3, $t1, funcAddu
 	
 	funcJr:
-	
+		
 	sw $ra, -4($sp)
 	move $a0, $s0 #prepara para função
 	jal carregaRegistrador
