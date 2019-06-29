@@ -13,7 +13,7 @@ funcTypeRJ:
 	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
 	srl $t0,$t0, 26
 	
-	#########
+
 	##### seleciona a subparte
 	beq $t0, $0, funcTypeR
 	li $t1, 2
@@ -34,10 +34,9 @@ funcTypeRJ:
 	addiu $t0, $t0, -0x400000
 	lw $t1, text
 	add $t0, $t1, $t0
-	addiu $t0, $t0, 4
 	
 	sw $t0, pc
-	j proxInstrucao
+	j decodifica
 	
 	
 	funcJal: #move o registrador pc, salvando o endereço atual em $ra
@@ -216,26 +215,28 @@ funcTypeI:
 	
 	sw $ra, -4($sp)
 	
-	move $a0, $s2 #prepara para função
+	move $a0, $s1 #prepara para função
 	jal carregaRegistrador
-	move $s2, $v0 #pos função
+	move $s1, $v0 #pos função
 	
 	lw $ra, -4($sp)
 	
-	mul $s3, $s0, $s2 ###############SUPER VERIFICAR ISSO AQUI
+	mul  $s3, $s0, $s1 ###############SUPER VERIFICAR ISSO AQUI
+	move $s1, $s2
 		
 	move $t0, $0
 	jr $ra 
 	
 	funcLw: ####
-	add $t0, $s0, $s2
-	la $s3, 0($t0)
+	lw $t8, pc
+	lw $t9, 0($t8)
+	addu $t0, $s0, $s2 ##########aaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAALW
+	lw $s3, 0($t0)
 	move $t0, $0 
 	jr $ra
 	
 	funcSw:#Da pra usar a função salvaNoRegistrador em funcOrg.asm
 	
-	sw $ra, -4($sp)
 	
 	move $a0, $s1 #prepara para função
 	jal carregaRegistrador
@@ -244,8 +245,6 @@ funcTypeI:
 	move $a0, $s0 #prepara para função
 	jal carregaRegistrador
 	move $s0, $v0 #pos função
-	
-	lw $ra, -4($sp)
 			
 	addu $s0, $s0, $s2
 	
@@ -294,7 +293,7 @@ funcTypeR:
 	
 	sw $s0, pc
 	
-	j proxInstrucao
+	j decodifica
 	
 	
 	funcAdd:
@@ -347,10 +346,7 @@ funcTypeR:
 	jal carregaRegistrador
 	lw $t0, -4($sp)
 	move $a0, $t0
-	li $t0, 1
-	bne $v0, $t0, notInteger
-	lw $a0, 0($a0)
-	notInteger:	
+		
 	syscall
 
 	j proxInstrucao

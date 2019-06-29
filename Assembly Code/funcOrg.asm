@@ -18,14 +18,6 @@ salvaNoRegistrador:
 	
 proxInstrucao:
 	lw $t0, pc #######################carrega em $t0 o endereço de pc
-	#########DEBUG
-	la $t5, FuncoesRealizadas
-	lw $t6, 0($t0)
-	lw $t8, count
-	sll $t7, $t8, 2
-	add $t7, $t7, $t5
-	sw $t6, 0($t7)
-	###########
 	addi $t1, $t0, 4
 	sw $t1, pc
 	lw $t0, count
