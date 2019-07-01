@@ -17,12 +17,14 @@ salvaNoRegistrador:
 	jr $ra
 	
 proxInstrucao:
-	lw $t0, pc #######################carrega em $t0 o endereço de pc
-	addi $t1, $t0, 4
+	lw $t0, pc
+	addi $t1, $t0, 4 # O endereço atual de pc + 4
 	sw $t1, pc
-	lw $t0, count
-	addi $t0, $t0, 1
-	sw $t0, count
+	jal addCount # Chama a função contadora
 	j decodifica
 	
-	
+addCount:
+	lw $t0, contador_de_instrucoes
+	addi $t0, $t0, 1 #adiciona 1 ao contador
+	sw $t0, contador_de_instrucoes
+	jr $ra

@@ -1,75 +1,123 @@
 decodifica:
+
+	#CONTADOR DE INSTRUÇÕES, SE FOR -1 O PROGRAMA TODO SERÁ EXECUTADO
+	li $t0, -1
+	lw $t1, instrucoes_para_serem_executadas
+	beq $t0, $t1, continua
+	lw $t0, contador_de_instrucoes
+	beq $t0, $t1, contador_terminado
+	
+	continua:
 	lw $t0, pc #carrega em $t0 o endereço de pc
 	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
 	srl $t0, $t0, 29 #desloca 29 casas a direita para usar os 3 primeiros digitos para usar o switch.
 
-	##############
-	beq $t0, $0, funcTypeRJ
-	j funcTypeI
+	beq $t0, $0, funcTypeRJ # se os 3 primeiros bits forem 0, vai para as funções de formato R e Jump
+	j funcTypeI #Se não, vai para instruções I
+	
+	
+	#QUANDO O CONTADOR ACABA, IMPRIME UMA INFORMAÇÃO
+	
+contador_terminado:
+	li $t0, 0
+	sw $t0, contador_de_instrucoes
+	
+	li $v0, 4
+	la $a0, mensagem_contador
+	syscall
+	
+	j menu
 	
 funcTypeRJ:
 
+
 	lw $t0, pc #carrega em $t0 o endereço de pc
 	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
-	srl $t0,$t0, 26
+	srl $t0,$t0, 26 #Move os 6 primeiros bits para verificação da função destino
 	
 
 	##### seleciona a subparte
-	beq $t0, $0, funcTypeR
+	beqz $t0, funcTypeR #Vai para as funções de tipo R
 	li $t1, 2
-	beq $t0, $t1, funcJ
+	beq $t0, $t1, funcJ #000010 -> Função Jump
 	li $t1, 3
-	beq $t0, $t1, funcJal
+	beq $t0, $t1, funcJal #000011 -> Função Jump And Link
 	li $t1, 5
-	beq $t0, $t1, funcBne	
+	beq $t0, $t1, funcBne #000101 -> Função Branch if not equal
+	
 	
 	funcJ: #move o registrador pc para outro local dentro de .text
-	
-	###CONVERSÃO DE ENDEREÇO
-	lw $t0, pc
+
+	lw $t0, pc #JUMP: inicio
 	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
-	sll $t0, $t0, 6
+	sll $t0, $t0, 6 #retira os bits de endereçamento de função
+	
+	
+	##################COM BASE NA PRÓXIMA INSTRUÇÃO##################################
+	#IMPORTANTE: como só se trabalha com endereços multiplos de 4, estrategicamente #
+	#a função jump não apresenta seus ultimos 2 bits, que consequentemente são zeros#
+	#logo, para achar o endereço completo, é necessário acrescentar, deslocando     #
+	#apenas 4 bits a direita ao invês dos 6 que foram deslocados pra esquerda.      #
+	#################################################################################
 	srl $t0, $t0, 4
 	
-	addiu $t0, $t0, -0x400000
-	lw $t1, text
-	add $t0, $t1, $t0
+	##################COM BASE NO PRÓXIMO BLOCO######################################
+	#IMPORTANTE: como o jump trabalha locomovendo a variável PC dentro da area      #
+	# .text do MIPS, precisamos calcular onde seria esse campo no nosso simulador,  #
+	#logo, se desconta o valor inicial dessa área  (0x400000) e se acrescenta o     #
+	#valor inicial da area text do nosso simulador.                                 #
+	#################################################################################
+	addiu $t0, $t0, -0x400000 #O desconto
+	lw $t1, text #carrega o endereço da area text simulada
+	add $t0, $t1, $t0 #faz a soma para encontrar a nova area
 	
-	sw $t0, pc
-	j decodifica
+	# COMO ESSA FUNÇÃO MEXE DIRETAMENTE COM A VARIAVEL PC, A FUNÇÃO 
+	# PROXIMA INSTRUÇÃO, RESPONSAVEL POR MOVER PC NÃO É CHAMADA
+	# INDO DIRETAMENTE PRA EXECUÇÃO DA INSTRUÇÃO APONTADA POR JUMP
+	sw $t0, pc # Salva esse novo endereço em pc
+	jal addCount #add no contador de instruções
+	j decodifica #pula pra próxima instrução
 	
 	
 	funcJal: #move o registrador pc, salvando o endereço atual em $ra
-	lw $t0, pc#########################JAAALLLLLLLLLLL
+	lw $t0, pc #JAL: inicio
 	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
 	sll $t0, $t0, 6
-	srl $t0, $t0, 4
+	srl $t0, $t0, 4 #LER LINHA 33 DESTE ARQUIVO.
 	
-	addiu $t0, $t0, -0x400000
+	
+	addiu $t0, $t0, -0x400000 #LER LINHA 41 DESTE ARQUIVO
 	lw $t1, text
-	add $t0, $t1, $t0 #PRONTO O NOVO ENDEREÇO PARA PULAR
+	add $t0, $t1, $t0 
 	
-	lw $t1, pc
-	addi $a0, $t1, 4 #############ENDEREÇO PARA RETORNAR
+	lw $t1, pc #$t1 <- o endereço da instrução sendo executada, que está em pc
 	
-	sw $t0, -4($sp)
+	sw $t0, pc # o endereço da proxima instrução a ser executada -> $t0
 	
-	li $a1, 31
+	
+	######################################################################################################
+	#                          ________________                                                          #
+	#                         |END. ATUAL      |-----_                                                   #
+	#                         |________________|      \                                                  #
+	#MAS SALVA ESSE EM $RA--->|P/ SALV. EM $RA |       \                                                 #
+	#                         |________________|        \ PULA PC PRA CÁ                                 #
+	#                         |       ...      |       _/                                                #
+	#                         |________________|     _/                                                  #
+	#                         |PROX. INST.     |<---/                                                    #
+	#                         |________________|                                                         #
+	#                                                                                                    #
+	######################################################################################################
+	
+	addi $a0, $t1, 4 #CARREGA PARA SALVAR EM $ra DO SIMULADOR, 
+	li $a1, 31 #numero do registrador ra
 	jal salvaNoRegistrador
 	
-	lw $t0, -4($sp)
-	
-	sw $t0, pc
-	
-	#############NÃO MODIFICA PC, POIS JA ESTÁ MODIFICADO	
-	lw $t0, count
-	addi $t0, $t0, 1
-	sw $t0, count
+	jal addCount
 	j decodifica
 
 	funcBne: #pula para tal instrução se os valores comparados forem diferentes
 	
-	lw $t0, pc #carrega em $t0 o endereço de pc ###################################
+	lw $t0, pc #carrega em $t0 o endereço de pc
 	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
 	sll $t0, $t0, 6 # |---6--|**5**|**5**|*********16******|
 	srl $s0, $t0, 27 # |**5**|------------------27----------------| #### REGISTRADOR DE OPERAÇÃO
@@ -77,27 +125,31 @@ funcTypeRJ:
 	srl $s1, $t0, 27 # |**5**|----------16-------|  ##### REGISTRADOR DE SALVAMENTO
 	
 	
-	sw $t0, -4($sp)##########AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA#####################
-	move $a0, $s0 #prepara para função
+	
+	move $a0, $s0 #BNE: inicio #move o endereço do registrador rs
 	jal carregaRegistrador
-	move $s0, $v0 #pos função
+	move $s0, $v0 #move o conteudo do registrador rs
 	
 	
-	move $a0, $s1 #prepara para função
+	move $a0, $s1 #prepara para carregar 0 registrador rt
 	jal carregaRegistrador
 	move $s1, $v0 #pos função
-	lw $t0, -4($sp)
 	
-	bne $s0, $s1, bneConfirmada
+	bne $s0, $s1, bneConfirmada #se os registradores são iguais vai para a proxima instrução, se não, tem que pular
 	
 	j proxInstrucao
 	
+	##################
+	# BNE nos dá o número de instruções a se pular ou voltar
+	# multiplica por 4 utilizando deslocamento, para saber o numero de endereços a se pular
+	##################
 	bneConfirmada:
-	lw $t2, pc##################AQUI!!!!!!!!!!!!!!!!
+	lw $t2, pc
 	lw $t1, 0($t2)
 	sll $t1, $t1, 16
 	srl $t1, $t1, 14
-	addu $t0, $t2, $t1
+	
+	addu $t0, $t2, $t1 # Variavel PC + Endereço a pular
 	
 	sw $t0, pc
 	
@@ -120,10 +172,18 @@ funcTypeI:
 	srl $s2, $t0, 16 # |*********16******|   #####NUMERO IMEDIATO
 
 				
-		###### FUNCSSS
+	#########SWITCH DE FUNCS ####################
 	lw $t0, pc #carrega em $t0 o endereço de pc
 	lw $t0, 0($t0) #carrega o endereço que está dentro da variavel pc
 	srl $t0, $t0, 26
+	
+	
+	# * addi e addiu chamam addi de qualquer modo, detectando valor negativo, é encaminhado para addiu
+	#
+	#
+	
+	
+	
 	
 	
 	funcSwSwitch:
@@ -174,26 +234,28 @@ funcTypeI:
 	bne $t0, $t1,postFunc
 	jal funcLw	 
 	
-	postFunc:
-			
+	
+	######## APOS EXECUTAR A FUNÇÃO, É EXECUTADO O POST, QUE PREPARA OS REGISTRADORES PARA SALVAR O VALOR CONSEGUIDO PELA FUNÇÃO
+	postFunc:	
 	move $a0, $s3	
 	move $a1, $s1
 	jal salvaNoRegistrador
 	j proxInstrucao
 
-
+	######################### FUNÇÕES
 	funcAddi:
-	srl $t0, $s2, 15 #################################ADDIIUU
-	li $t1, 1
-	beq $t1, $t0, funcAddiu	
-	add $s3, $s0, $s2 
+	srl $t0, $s2, 15          # {
+	li $t1, 1                 # { AVALIA O PRIMEIRO BIT DA SEQUENCIA PARA VER SE É NEGATIVO, SE SIM, ENCAMINHA PARA ADDIU
+	beq $t1, $t0, funcAddiu	  # {
+	
+	add $s3, $s0, $s2  #FAZ A SOMA
 	move $t0, $0
 	jr $ra
 		
-	funcAddiu:	#RESOLVER PROBLEMA ENTRE ADD E ADDU
+	funcAddiu:
 	
-	lui $t1, 0xffff###########################################################
-	or $s2, $s2, $t1
+	lui $t1, 0xffff #CARREGA O VALOR NEGATIVO NOS 16 BITS SUPERIORES
+	or $s2, $s2, $t1 #Cria o valor total do registrador
 	addu $s3, $s0, $s2
 	move $t0, $0 
 	jr $ra
@@ -211,26 +273,23 @@ funcTypeI:
 	funcMul: #carrega o valor imediato nos 4 primeiros bytes da instrução
 	
 	
-	srl $s2, $s2, 11 # REGISTRADOR DE OPERAÇÃO
+	srl $s2, $s2, 11 #adquire os 5 bits do registrador
 	
 	sw $ra, -4($sp)
-	
 	move $a0, $s1 #prepara para função
 	jal carregaRegistrador
 	move $s1, $v0 #pos função
-	
 	lw $ra, -4($sp)
 	
-	mul  $s3, $s0, $s1 ###############SUPER VERIFICAR ISSO AQUI
-	move $s1, $s2
-		
+	mul  $s3, $s0, $s1 #OPERAÇÃO
+	
+	move $s1, $s2	
 	move $t0, $0
 	jr $ra 
 	
-	funcLw: ####
-	lw $t8, pc
-	lw $t9, 0($t8)
-	addu $t0, $s0, $s2 ##########aaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAALW
+	funcLw: #função LW
+	
+	addu $t0, $s0, $s2 
 	lw $s3, 0($t0)
 	move $t0, $0 
 	jr $ra
@@ -250,7 +309,7 @@ funcTypeI:
 	
 	sw $s1, 0($s0)
 	
-	j proxInstrucao
+	j proxInstrucao 
 
 
 funcTypeR:
@@ -286,13 +345,14 @@ funcTypeR:
 	funcJr:
 		
 	sw $ra, -4($sp)
-	move $a0, $s0 #prepara para função
+	move $a0, $s0 #manda numero do registrador pra função
 	jal carregaRegistrador
-	move $s0, $v0 #pos função
+	move $s0, $v0 #captura endereço do registrador
 	lw $ra, -4($sp)	
 	
-	sw $s0, pc
+	sw $s0, pc #Joga pra variavel pc o novo endereço pra ir
 	
+	jal addCount # Chama a função contadora
 	j decodifica
 	
 	
@@ -338,14 +398,14 @@ funcTypeR:
 	
 	funcSyscall:
 	
-	li $a0, 4
-	jal carregaRegistrador
-	move $t0, $v0 #pos função
-	sw $t0, -4($sp)
+	li $a0, 4               # {
+	jal carregaRegistrador  # { carrega valor de $a0
+	move $t0, $v0           # {
+	sw $t0, -4($sp) #salva esse valor para usar depois
 	li $a0, 2 
-	jal carregaRegistrador
+	jal carregaRegistrador #O valor que está em $v0 continua para ser usado em syscall
 	lw $t0, -4($sp)
-	move $a0, $t0
+	move $a0, $t0 #Carrega o valor para $a0 ser utlizado no syscall
 		
 	syscall
 
